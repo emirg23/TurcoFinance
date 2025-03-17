@@ -42,7 +42,8 @@ await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseler
         const symbol = row.querySelector('td.currency b')?.textContent;
         const yuzde = row.querySelector('td[id^="h_td_yuzde_id_"]')?.textContent;
         const fiyat = row.querySelector('td[id^="h_td_fiyat_id_"]')?.textContent;
-        return { symbol, yuzde, fiyat };
+        const zaman = row.querySelector('td[id^="h_td_zaman_id_"]')?.textContent;
+        return { symbol, yuzde, fiyat, zaman };
       });
     });
     console.log(`Extracted ${stocks.length} stocks.`);
@@ -56,7 +57,7 @@ await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseler
         acc[stock.symbol] = {
           fiyat: stock.fiyat,
           yuzde: stock.yuzde,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          zaman: stock.zaman
         };
         return acc;
       }, {});
