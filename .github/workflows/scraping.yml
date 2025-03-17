@@ -1,4 +1,4 @@
-name: Scrape Stocks and Upload to Firebase
+name: Scrape Stocks | Upload to Firebase
 
 on:
   schedule:
