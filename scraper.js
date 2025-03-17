@@ -24,9 +24,11 @@ async function scrapeAndUpload() {
     const page = await browser.newPage();
     
     console.log('Navigating to URL...');
-    await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseleri/', {
-      timeout: 60000, // Increase timeout to 60 seconds
-    });
+await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseleri/', {
+  waitUntil: 'load', // Wait until the page is fully loaded
+  timeout: 120000,
+});
+
     console.log('Page loaded.');
 
     console.log('Waiting for table rows...');
