@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Cache Chromium
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /usr/bin/chromium-browser
           key: ${{ runner.os }}-chromium-${{ hashFiles('**/package-lock.json') }}
