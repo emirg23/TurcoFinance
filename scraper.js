@@ -1,13 +1,13 @@
-// scraper.js
-
 const puppeteer = require('puppeteer');
 const firebase = require('firebase-admin');
-const serviceAccount = require('./firebase-service-account-key.json');
+
+// Load Firebase service account key from the environment variable
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
 
 // Initialize Firebase Admin SDK
 firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccount),
-  databaseURL: 'https://your-database-url.firebaseio.com'
+  databaseURL: 'https://your-database-url.firebaseio.com' // Replace with your actual Firebase database URL
 });
 
 const db = firebase.firestore();
