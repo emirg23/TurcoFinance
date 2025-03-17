@@ -7,7 +7,6 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
 // Initialize Firebase Admin SDK
 firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccount),
-  databaseURL: 'https://your-database-url.firebaseio.com' // Replace with your actual Firebase database URL
 });
 
 const db = firebase.firestore();
