@@ -1,34 +1,27 @@
-name: Scrape and Update Stocks
+name: Scraping and Uploading to Firebase
 
 on:
-  # Trigger every minute
   schedule:
-    - cron: '*/1 * * * *'  # Every minute
-  workflow_dispatch:  # Allows manual triggering from the GitHub Actions tab
+    - cron: '*/1 * * * *'  # Run every minute
+  workflow_dispatch:        # Allow manual trigger
 
 jobs:
-  scrape_and_upload:
-    runs-on: ubuntu-latest  # Choose the appropriate runner
+  scraping-job:
+    runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # Set up Node.js environment
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'  # You can change this to the version you prefer
+          node-version: '16'
 
-      # Install dependencies (firebase-tools and puppeteer for scraping)
       - name: Install dependencies
         run: |
-          npm install -g firebase-tools  # Install Firebase CLI
-          npm install  # Install dependencies from your package.json
+          npm install
 
-      # Run the scraper script to fetch stock data and upload to Firebase
-      - name: Run the scraper and upload to Firebase
+      - name: Run scraper script
         run: |
-          echo "Running scraper..."
-          node scraper.js  # Ensure scraper.js is in your repo and contains the scraping logic
+          node scraper.js
