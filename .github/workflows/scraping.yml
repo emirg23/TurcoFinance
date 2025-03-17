@@ -1,33 +1,27 @@
-name: Scraping Job
+name: Scrape and Upload to Firebase
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # Runs every minute
-  workflow_dispatch:  # Allows manual triggering
+    - cron: '*/1 * * * *'  # Runs every minute
+  workflow_dispatch:
 
 jobs:
-  scraping-job:
+  scrape:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'  # Specify a Node.js version
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Set up Firebase credentials
-      run: echo "$FIREBASE_CREDENTIALS" > firebase-service-account-key.json
-      env:
-        FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
-
-    - name: Check directory contents
-      run: ls -alh  # Helps verify that all files are in place
-
-    - name: Run scraper script
-      run: node scraper.js
+      - name: Run scraper
+        env:
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+        run: node scraper.js
