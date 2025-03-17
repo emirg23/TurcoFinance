@@ -1,14 +1,9 @@
-name: Scrape Stocks | Upload to Firebase
+name: Scrape and Upload to Firebase
 
 on:
   schedule:
     - cron: '*/1 * * * *'  # Runs every minute
-  push:
-    branches:
-      - "main"
-  pull_request:
-    branches:
-      - "main"
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -21,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Use a stable version of Node.js (16 or 18)
+          node-version: '16'  # Set to a newer version of Node.js (16 or 18)
 
       - name: Install dependencies
         run: npm install
@@ -30,7 +25,8 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y wget
-          sudo apt-get install -y chromium-browser libx11-dev libx11-xcb-dev libglu1-mesa libglib2.0-0 libnss3 libxcomposite1 libxdamage1 libxrandr2 libatk1.0-0 libatk-bridge2.0-0 libappindicator3-1 libgdk-pixbuf2.0-0 libnspr4 libnss3
+          sudo apt-get install -y libx11-dev libx11-xcb-dev libglu1-mesa libglib2.0-0 libnss3 libxcomposite1 libxdamage1 libxrandr2 libatk1.0-0 libatk-bridge2.0-0 libappindicator3-1 libgdk-pixbuf2.0-0 libnspr4 libnss3
+          sudo apt-get install -y chromium-browser
 
       - name: Run scraper
         env:
