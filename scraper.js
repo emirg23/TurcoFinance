@@ -15,8 +15,10 @@ const db = firebase.firestore();
 async function scrapeAndUpload() {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseleri/');
-
+await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseleri/', {
+  timeout: 60000, // Increase timeout to 60 seconds
+});
+  
   const stocks = await page.evaluate(() => {
     const stockElements = document.querySelectorAll('tr.zebra');
     return Array.from(stockElements).map((row) => {
