@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const firebase = require('firebase-admin');
 
-// Load Firebase service account key from the environment variable
+// Get Firebase credentials from environment variable
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
 
 // Initialize Firebase Admin SDK
