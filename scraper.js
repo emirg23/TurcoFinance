@@ -16,7 +16,7 @@ async function scrapeAndUpload() {
   try {
     console.log('Launching browser...');
     browser = await puppeteer.launch({
-      executablePath: '/usr/bin/chromium-browser',  // Ensure the Chromium path is set for CI/CD environments
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,  // Use the environment variable for Chromium path
       headless: true, // Run in headless mode
     });
     console.log('Browser launched successfully.');
