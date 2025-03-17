@@ -14,20 +14,27 @@ const db = firebase.firestore();
 async function scrapeAndUpload() {
   let browser;
   try {
+    console.log('Launching browser...');
     browser = await puppeteer.launch({
       executablePath: '/usr/bin/chromium-browser',  // Ensure the Chromium path is set for CI/CD environments
       headless: true, // Run in headless mode
     });
+    console.log('Browser launched successfully.');
 
     const page = await browser.newPage();
     
-    // Wait for the specific table rows to appear before continuing
+    console.log('Navigating to URL...');
     await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseleri/', {
       timeout: 60000, // Increase timeout to 60 seconds
     });
+    console.log('Page loaded.');
+
+    console.log('Waiting for table rows...');
     await page.waitForSelector('tr.zebra', { timeout: 60000 }); // Wait for the specific element to load
+    console.log('Table rows loaded.');
 
     const stocks = await page.evaluate(() => {
+      console.log('Extracting stock data...');
       const stockElements = document.querySelectorAll('tr.zebra');
       return Array.from(stockElements).map((row) => {
         const symbol = row.querySelector('td.currency b')?.textContent;
@@ -36,10 +43,13 @@ async function scrapeAndUpload() {
         return { symbol, yuzde, fiyat };
       });
     });
+    console.log(`Extracted ${stocks.length} stocks.`);
 
     // Upload scraped data to Firebase Firestore
     const groupedStocks = groupStocksByFirstLetter(stocks);
+    console.log('Grouping stocks by first letter...');
     for (const [letter, group] of Object.entries(groupedStocks)) {
+      console.log(`Uploading data for group: ${letter}`);
       const stockData = group.reduce((acc, stock) => {
         acc[stock.symbol] = {
           fiyat: stock.fiyat,
@@ -50,6 +60,7 @@ async function scrapeAndUpload() {
       }, {});
 
       await db.collection('stocks').doc(letter).set({ stocks: stockData });
+      console.log(`Uploaded data for group: ${letter}`);
     }
 
     console.log('Scraping and Firebase upload completed!');
@@ -57,6 +68,7 @@ async function scrapeAndUpload() {
     console.error('Error during scraping or uploading data:', error);
   } finally {
     if (browser) {
+      console.log('Closing browser...');
       await browser.close(); // Ensure the browser is closed in case of error
     }
   }
