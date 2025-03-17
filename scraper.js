@@ -1,92 +1,59 @@
-const puppeteer = require('puppeteer'); // Import Puppeteer
-const firebase = require('firebase-admin'); // Import Firebase Admin SDK
+// scraper.js
 
-// Initialize Firebase Admin SDK with your service account
+const puppeteer = require('puppeteer');
+const firebase = require('firebase-admin');
+const serviceAccount = require('./firebase-service-account-key.json');
+
+// Initialize Firebase Admin SDK
 firebase.initializeApp({
-  credential: firebase.credential.applicationDefault(),
-  databaseURL: "https://your-project-id.firebaseio.com" // Replace with your Firebase project URL
+  credential: firebase.credential.cert(serviceAccount),
+  databaseURL: 'https://your-database-url.firebaseio.com'
 });
 
-const db = firebase.firestore(); // Get Firestore instance
+const db = firebase.firestore();
 
-// Function to scrape stock data
 async function scrapeAndUpload() {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-
-  // Navigate to the stock page
   await page.goto('https://uzmanpara.milliyet.com.tr/canli-borsa/bist-TUM-hisseleri/');
 
-  // Scrape stock data
   const stocks = await page.evaluate(() => {
-    const rows = document.querySelectorAll('tr.zebra');
-    const stockData = [];
-
-    rows.forEach(row => {
-      const symbol = row.querySelector('td.currency b')?.innerText;
-      const yuzde = row.querySelector('td.yuzde')?.innerText;
-      const fiyat = row.querySelector('td.fiyat')?.innerText;
-
-      if (symbol && yuzde && fiyat) {
-        stockData.push({
-          symbol,
-          yuzde,
-          fiyat,
-        });
-      }
+    const stockElements = document.querySelectorAll('tr.zebra');
+    return Array.from(stockElements).map((row) => {
+      const symbol = row.querySelector('td.currency b')?.textContent;
+      const yuzde = row.querySelector('td[id^="h_td_yuzde_id_"]')?.textContent;
+      const fiyat = row.querySelector('td[id^="h_td_fiyat_id_"]')?.textContent;
+      return { symbol, yuzde, fiyat };
     });
-
-    return stockData;
   });
 
   await browser.close();
 
-  // Now, upload the scraped data to Firestore
-  uploadStocksToFirebase(stocks);
-}
-
-// Function to upload stocks to Firestore
-async function uploadStocksToFirebase(stocks) {
+  // Upload scraped data to Firebase Firestore
   const groupedStocks = groupStocksByFirstLetter(stocks);
-
   for (const [letter, group] of Object.entries(groupedStocks)) {
-    const stockData = {};
-    group.forEach(stock => {
-      stockData[stock.symbol] = {
+    const stockData = group.reduce((acc, stock) => {
+      acc[stock.symbol] = {
         fiyat: stock.fiyat,
         yuzde: stock.yuzde,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
       };
-    });
+      return acc;
+    }, {});
 
-    try {
-      await db.collection('stocks').doc(letter).set({
-        stocks: stockData,
-      });
-      console.log(`Group ${letter} uploaded successfully`);
-    } catch (error) {
-      console.error(`Error uploading group ${letter}:`, error);
-    }
+    await db.collection('stocks').doc(letter).set({ stocks: stockData });
   }
+
+  console.log('Scraping and Firebase upload completed!');
 }
 
-// Helper function to group stocks by their first letter
 function groupStocksByFirstLetter(stocks) {
-  const groupedStocks = {};
-
-  stocks.forEach(stock => {
-    const firstLetter = stock.symbol.charAt(0).toUpperCase();
-
-    if (!groupedStocks[firstLetter]) {
-      groupedStocks[firstLetter] = [];
-    }
-    groupedStocks[firstLetter].push(stock);
-  });
-
-  return groupedStocks;
+  return stocks.reduce((acc, stock) => {
+    const firstLetter = stock.symbol[0].toUpperCase();
+    if (!acc[firstLetter]) acc[firstLetter] = [];
+    acc[firstLetter].push(stock);
+    return acc;
+  }, {});
 }
 
-// Run the scraper and upload function
-scrapeAndUpload()
-  .then(() => console.log('Scraping and upload complete!'))
-  .catch(error => console.error('Error during scraping and upload:', error));
+scrapeAndUpload();
